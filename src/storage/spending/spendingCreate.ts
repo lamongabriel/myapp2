@@ -1,11 +1,11 @@
 import AsyncStorage from
   "@react-native-async-storage/async-storage";
 
-import { SpendingStorageDTO } from "./SpendingStorageDTO";
 import { SPENDING_COLLECTION } from "../StorageConfig";
 import { spendingGetAll } from "./spendingGetAll";
+import { MyAPP2Data } from "../../pages/Dashboard";
 
-export async function spendingCreate(newSpending: SpendingStorageDTO) {
+export async function spendingCreate(newSpending: MyAPP2Data) {
   try {
     const storageSpending = await spendingGetAll()
 

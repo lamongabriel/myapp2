@@ -1,29 +1,24 @@
+import { MyAPP2Data } from "../../pages/Dashboard";
 import {
   Container,
   Description,
   Amount,
-  Local,
   Footer,
-  Category,
   Date,
 } from "./styles";
 
-import { SpendingStorageDTO } from "../../storage/spending/SpendingStorageDTO";
-
 type Props = {
-  data: SpendingStorageDTO;
+  data: MyAPP2Data;
 };
 
 export function TransactionExpenses({ data }: Props) {
   return (
     <Container>
-      <Description>{data.invoice}</Description>
-      <Description>{data.product}</Description>
-      <Amount>{data.amountInvoice}</Amount>
-      <Local>{data.codeInvoice}</Local>
+      <Description>Vendedor: {data.sellerCPF}</Description>
+      <Description>Produto: {data.product}</Description>
+      <Amount>R${data.amount}</Amount>
       <Footer>
-        <Category>{data.supplier}</Category>
-        <Date>{data.dateInvoice}</Date>
+        <Date>Data: {data.soldDate}</Date>
       </Footer>
     </Container>
   );

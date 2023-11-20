@@ -1,5 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
-import { useFocusEffect } from "@react-navigation/native";
+import { useState, useEffect } from "react";
 
 import { Header } from "../../components/Header";
 
@@ -10,30 +9,29 @@ import { Container, Transactions } from "./styles";
 import { TransactionExpenses } from "../../components/TransactionExpenses";
 
 import { spendingGetAll } from "../../storage/spending/spendingGetAll";
-import { SpendingStorageDTO } from "../../storage/spending/SpendingStorageDTO";
+
+import { MyAPP2Data } from "../Dashboard";
+import { useIsFocused } from "@react-navigation/native";
 
 export function ListExpenses() {
-  const [dataExpenses, setListExpenses] = useState<SpendingStorageDTO[]>([]);
+  const isFocused = useIsFocused();
+
+  const [dataExpenses, setListExpenses] = useState<MyAPP2Data[]>([]);
 
   async function loadDataSpending() {
     const data = await spendingGetAll();
-    console.log("Dados gravados: ", data);
     setListExpenses(data);
   }
 
-  // useEffect(() => {
-  //   loadDataSpending()
-  // }, [])
-
-  useFocusEffect(
-    useCallback(() => {
+  useEffect(() => {
+    if (isFocused) {
       loadDataSpending();
-    }, [])
-  );
+    }
+  }, [isFocused]);
 
   return (
     <Container>
-      <Header title="Listagem de Gastos" />
+      <Header title="Listagem" />
 
       <Transactions>
         <FlatList

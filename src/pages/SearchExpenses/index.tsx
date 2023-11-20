@@ -9,32 +9,29 @@ import { SpendingStorageDTO } from "../../storage/spending/SpendingStorageDTO";
 import { TransactionExpenses } from "../../components/TransactionExpenses";
 
 export function SearchExpenses() {
-  const [supplier, setsupplier] = useState("");
+  const [supplier, setSupplier] = useState("");
+  const [taxCode, setTaxCode] = useState("");
+
   const [dataExpenses, setDataExpenses] = useState<SpendingStorageDTO[]>([]);
-  const [addSupplier, setAddSupplier] = useState(0);
+  const [totalTax, setTotalTax] = useState(0);
 
   async function handleSearchSpending() {
-    if (supplier.trim() === "") {
-      return Alert.alert("Pesquisa de Gastos");
+    if (supplier.trim() === "" || taxCode.trim() === "") {
+      return Alert.alert("Por favor preencha os campos.");
     }
+
     const data = await spendingGetAll();
-    const newDatda = data.filter(
-      (item) =>
-        item.codeInvoice === parseFloat(supplier) ||
-        item.supplier == supplier.trim()
-    );
-    console.log(newDatda);
 
-    function Calculate(total: number, item: SpendingStorageDTO) {
-      return total + item.amountInvoice;
-    }
+    const filteredValues = data.filter(item => {      
+      return item.codeInvoice === Number(taxCode) && item.supplier === supplier.trim()
+    })
 
-    const soma = newDatda
-      .filter((item) => item.amountInvoice)
-      .reduce(Calculate, 0);
+    const sum = filteredValues.reduce((prev, cur) => {
+      return prev + (cur?.amountInvoice ?? 0)
+    }, 0)
 
-    setAddSupplier(soma);
-    setDataExpenses(newDatda);
+    setTotalTax(sum);
+    setDataExpenses(filteredValues);
   }
 
   return (
@@ -42,16 +39,23 @@ export function SearchExpenses() {
       <Header title="Pesquisa Gastos" />
 
       <Input
-        placeholder="Código ou Forncedor"
+        placeholder="Fornecedor"
         placeholderTextColor="#363F5F"
         value={supplier}
-        onChangeText={(value) => setsupplier(value)}
+        onChangeText={(value) => setSupplier(value)}
       />
+
+      <Input
+        placeholder="Código do Imposto"
+        placeholderTextColor="#363F5F"
+        value={supplier}
+        onChangeText={(value) => setTaxCode(value)}
+      />  
 
       <Button title="Pesquisa" onPress={handleSearchSpending} />
 
-      {addSupplier != 0 && (
-        <TextCard>{`Total de Gastos: R$ ${addSupplier}`}</TextCard>
+      {totalTax != 0 && (
+        <TextCard>{`Total de Gastos: R$ ${totalTax}`}</TextCard>
       )}
 
       <Transactions>

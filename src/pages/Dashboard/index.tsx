@@ -1,6 +1,6 @@
 import { useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Alert, FlatList } from "react-native";
+import { Alert, TouchableWithoutFeedback, Keyboard } from "react-native";
 import { Button } from "../../components/Button";
 import { Header } from "../../components/Header";
 import { Input } from "../../components/Input";
@@ -10,13 +10,27 @@ import { InputDate } from "../../components/InputDate";
 import { spendingCreate } from "../../storage/spending/spendingCreate";
 import { spendingGetAll } from "../../storage/spending/spendingGetAll";
 import { formatAmount } from "../../utils/formatAmount";
+import { spendingCheckMaximumCPFs } from "../../storage/spending/spendingCheckMaximumCPFs";
+
+export interface MyAPP2Data {
+  sellerCPF: string
+  product: string
+  amount: number
+  soldDate: string
+}
+
 export function Dashboard() {
-  const [invoice, setInvoice] = useState("");
+  const [sellerCPF, setSellerCPF] = useState("");
   const [product, setProduct] = useState("");
-  const [amountInvoice, setamountInvoice] = useState("");
-  const [codeInvoice, setcodeInvoice] = useState("");
-  const [supplier, setSupplier] = useState("");
-  const [dateInvoice, setdateInvoice] = useState("");
+  const [amount, setAmount] = useState("");
+  const [soldDate, setSoldDate] = useState("");
+
+  function resetInputs() {
+    setSellerCPF("");
+    setProduct("");
+    setAmount("");
+    setSoldDate("");
+  }
 
   async function handleAddNewSpending() {
     // limpa o AsyncStorage no ios
@@ -29,84 +43,66 @@ export function Dashboard() {
     // alert("O programa sera finalizado");
     // return;
 
-    const data = {
-      invoice,
-      product,
-      amountInvoice: formatAmount(amountInvoice),
-      codeInvoice: parseFloat(codeInvoice),
-      supplier,
-      dateInvoice,
-    };
-    await spendingCreate(data);
-    if (
-      codeInvoice === "1708" ||
-      codeInvoice === "3770" ||
-      codeInvoice === "3746" ||
-      supplier == "totvs" ||
-      supplier == "tot"
-    ) {
-      setInvoice("");
-      setamountInvoice("");
-      setcodeInvoice("");
-      setSupplier("");
-      setdateInvoice("");
-      setProduct("");
-      const result = await spendingGetAll();
-      console.log(result);
-    } else {
-      Alert.alert(
-        "Código Inválido ou fornecedor.",
-        "O código ou fornecedor não está cadastrado."
-      );
+    if(!sellerCPF || !product || !amount || !soldDate) {
+      return Alert.alert('Preencha todos os campos!')
     }
+
+    const canCreateAnotherCPF = await spendingCheckMaximumCPFs(sellerCPF)
+
+    if(!canCreateAnotherCPF) {
+      return Alert.alert('Número máximo de CPFs atingidos')
+    }
+
+    const data: MyAPP2Data = {
+      amount: formatAmount(amount),
+      product,
+      sellerCPF,
+      soldDate
+    };
+
+    await spendingCreate(data);
+
+    await spendingGetAll();
+    Alert.alert('Criado com sucesso!')
+
+    resetInputs()
   }
 
   return (
-    <Container>
-      <Header title="Cadastro" />
+    <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+      <Container>
+        <Header title="Cadastro" />
 
-      <Input
-        placeholder="Nota Fiscal"
-        placeholderTextColor="#363F5F"
-        value={invoice}
-        onChangeText={(value) => setInvoice(value)}
-      />
-      <Input
-        placeholder="Produto"
-        placeholderTextColor="#363F5F"
-        value={product}
-        onChangeText={(value) => setProduct(value)}
-      />
+        <Input
+          placeholder="CPF do Vendedor"
+          placeholderTextColor="#363F5F"
+          value={sellerCPF}
+          onChangeText={(value) => setSellerCPF(value)}
+        />
 
-      <Input
-        placeholder="Código do Imposto"
-        placeholderTextColor="#363F5F"
-        value={codeInvoice}
-        onChangeText={(value) => setcodeInvoice(value)}
-      />
+        <Input
+          placeholder="Produto"
+          placeholderTextColor="#363F5F"
+          value={product}
+          onChangeText={(value) => setProduct(value)}
+        />
 
-      <InputAmount
-        placeholder="Valor do Imposto"
-        placeholderTextColor="#363F5F"
-        value={amountInvoice}
-        onChangeText={(value) => setamountInvoice(value)}
-      />
+        <InputAmount
+          placeholder="Valor da Venda"
+          placeholderTextColor="#363F5F"
+          value={amount}
+          onChangeText={(value) => setAmount(value)}
+        />
 
-      <Input
-        placeholder="Fornecedor"
-        placeholderTextColor="#363F5F"
-        value={supplier}
-        onChangeText={(value) => setSupplier(value)}
-      />
+        <InputDate
+          placeholder="Data da Nota Fiscal"
+          placeholderTextColor="#363F5F"
+          value={soldDate}
+          onChangeText={(value) => setSoldDate(value)}
+        />
 
-      <InputDate
-        placeholder="Data da Nota Fiscal"
-        placeholderTextColor="#363F5F"
-        value={dateInvoice}
-        onChangeText={(value) => setdateInvoice(value)}
-      />
-
-      <Button title="Adicionar" onPress={handleAddNewSpending} />
-    </Container>
+        <Button title="Adicionar" onPress={handleAddNewSpending} />
+      </Container>
+    </TouchableWithoutFeedback>
   );
 }
