@@ -1,5 +1,4 @@
 import { useState } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Alert, TouchableWithoutFeedback, Keyboard } from "react-native";
 import { Button } from "../../components/Button";
 import { Header } from "../../components/Header";
@@ -10,26 +9,30 @@ import { InputDate } from "../../components/InputDate";
 import { spendingCreate } from "../../storage/spending/spendingCreate";
 import { spendingGetAll } from "../../storage/spending/spendingGetAll";
 import { formatAmount } from "../../utils/formatAmount";
-import { spendingCheckMaximumCPFs } from "../../storage/spending/spendingCheckMaximumCPFs";
 
 export interface MyAPP2Data {
-  sellerCPF: string
-  product: string
-  amount: number
-  soldDate: string
+  date: string
+  name: string
+  code: string
+  color: string
+  value: number
 }
 
-export function Dashboard() {
-  const [sellerCPF, setSellerCPF] = useState("");
-  const [product, setProduct] = useState("");
-  const [amount, setAmount] = useState("");
-  const [soldDate, setSoldDate] = useState("");
+const ALLOWED_CODES = ["001394", "007788", "001020", "003040"]
 
+export function Dashboard() {
+  const [date, setDate] = useState("");
+  const [name, setName] = useState("");
+  const [code, setCode] = useState("");
+  const [color, setColor] = useState("");
+  const [value, setValue] = useState("");
+  
   function resetInputs() {
-    setSellerCPF("");
-    setProduct("");
-    setAmount("");
-    setSoldDate("");
+    setDate("");
+    setName("");
+    setCode("");
+    setColor("");
+    setValue("")
   }
 
   async function handleAddNewSpending() {
@@ -43,21 +46,20 @@ export function Dashboard() {
     // alert("O programa sera finalizado");
     // return;
 
-    if(!sellerCPF || !product || !amount || !soldDate) {
+    if(!date || !name || !code || !color || !value) {
       return Alert.alert('Preencha todos os campos!')
     }
 
-    const canCreateAnotherCPF = await spendingCheckMaximumCPFs(sellerCPF)
-
-    if(!canCreateAnotherCPF) {
-      return Alert.alert('Número máximo de CPFs atingidos')
+    if(!ALLOWED_CODES.includes(code)) {
+      return Alert.alert("Código inválido!")
     }
 
     const data: MyAPP2Data = {
-      amount: formatAmount(amount),
-      product,
-      sellerCPF,
-      soldDate
+      code,
+      color,
+      date,
+      name,
+      value: formatAmount(value)
     };
 
     await spendingCreate(data);
@@ -73,32 +75,39 @@ export function Dashboard() {
       <Container>
         <Header title="Cadastro" />
 
-        <Input
-          placeholder="CPF do Vendedor"
+        <InputDate
+          placeholder="Data da entrada do veículo"
           placeholderTextColor="#363F5F"
-          value={sellerCPF}
-          onChangeText={(value) => setSellerCPF(value)}
+          value={date}
+          onChangeText={(value) => setDate(value)}
         />
 
         <Input
-          placeholder="Produto"
+          placeholder="Nome do veículo"
           placeholderTextColor="#363F5F"
-          value={product}
-          onChangeText={(value) => setProduct(value)}
+          value={name}
+          onChangeText={(value) => setName(value)}
         />
+
+        <Input
+          placeholder="Código do cliente"
+          placeholderTextColor="#363F5F"
+          value={code}
+          onChangeText={(value) => setCode(value)}
+        />
+
+        <Input
+          placeholder="Cor do veículo"
+          placeholderTextColor="#363F5F"
+          value={color}
+          onChangeText={(value) => setColor(value)}
+        />  
 
         <InputAmount
-          placeholder="Valor da Venda"
+          placeholder="Valor do veículo"
           placeholderTextColor="#363F5F"
-          value={amount}
-          onChangeText={(value) => setAmount(value)}
-        />
-
-        <InputDate
-          placeholder="Data da Nota Fiscal"
-          placeholderTextColor="#363F5F"
-          value={soldDate}
-          onChangeText={(value) => setSoldDate(value)}
+          value={value}
+          onChangeText={(value) => setValue(value)}
         />
 
         <Button title="Adicionar" onPress={handleAddNewSpending} />

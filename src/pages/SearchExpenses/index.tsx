@@ -1,67 +1,56 @@
 import { useState } from "react";
 import { Header } from "../../components/Header";
-import { Container, Transactions, TextCard } from "./styles";
+import { Container, Transactions } from "./styles";
 import { Input } from "../../components/Input";
 import { Button } from "../../components/Button";
-import { Alert, FlatList } from "react-native";
+import { Alert, FlatList, Text } from "react-native";
 import { spendingGetAll } from "../../storage/spending/spendingGetAll";
-import { SpendingStorageDTO } from "../../storage/spending/SpendingStorageDTO";
-import { TransactionExpenses } from "../../components/TransactionExpenses";
+
+import { MyAPP2Data } from "../Dashboard";
+import { TransactionExpensesWithTax } from "../../components/TransactionExpensesWithTax";
 
 export function SearchExpenses() {
-  const [supplier, setSupplier] = useState("");
-  const [taxCode, setTaxCode] = useState("");
+  const [client, setClient] = useState("");
 
-  const [dataExpenses, setDataExpenses] = useState<SpendingStorageDTO[]>([]);
-  const [totalTax, setTotalTax] = useState(0);
+  const [data, setData] = useState<MyAPP2Data[]>([]);
 
   async function handleSearchSpending() {
-    if (supplier.trim() === "" || taxCode.trim() === "") {
-      return Alert.alert("Por favor preencha os campos.");
+    const clientCode = client.trim()
+
+    if(!clientCode) {
+      return Alert.alert("Preencha o código do cliente.")
     }
 
-    const data = await spendingGetAll();
+    let storage = await spendingGetAll();
 
-    const filteredValues = data.filter(item => {      
-      return item.codeInvoice === Number(taxCode) && item.supplier === supplier.trim()
-    })
+    storage = storage.filter(item => item.code === clientCode)
 
-    const sum = filteredValues.reduce((prev, cur) => {
-      return prev + (cur?.amountInvoice ?? 0)
-    }, 0)
-
-    setTotalTax(sum);
-    setDataExpenses(filteredValues);
+    setData(storage)
   }
 
   return (
     <Container>
-      <Header title="Pesquisa Gastos" />
+      <Header title="Pesquisa" />
+
+      {client && (
+        <Text>
+          Total de Carros do cliente {data.length}
+        </Text>
+      )}
 
       <Input
-        placeholder="Fornecedor"
+        placeholder="CPF"
         placeholderTextColor="#363F5F"
-        value={supplier}
-        onChangeText={(value) => setSupplier(value)}
+        value={client}
+        onChangeText={(value) => setClient(value)}
       />
-
-      <Input
-        placeholder="Código do Imposto"
-        placeholderTextColor="#363F5F"
-        value={supplier}
-        onChangeText={(value) => setTaxCode(value)}
-      />  
 
       <Button title="Pesquisa" onPress={handleSearchSpending} />
 
-      {totalTax != 0 && (
-        <TextCard>{`Total de Gastos: R$ ${totalTax}`}</TextCard>
-      )}
-
       <Transactions>
         <FlatList
-          data={dataExpenses}
-          renderItem={({ item }) => <TransactionExpenses data={item} />}
+          data={data}
+          renderItem={({ item }) => <TransactionExpensesWithTax data={item} />}
         />
       </Transactions>
     </Container>

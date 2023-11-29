@@ -7,11 +7,14 @@ import {
   Date,
 } from "./styles";
 
-type Props = {
-  data: MyAPP2Data;
-};
+interface Props {
+  data: MyAPP2Data
+}
 
-export function TransactionExpenses({ data }: Props) {
+export function TransactionExpensesWithTax({ data }: Props) {
+
+  const tax = (data.value * 0.02).toFixed(2)
+
   return (
     <Container>
       <Description>Nome: {data.name}</Description>
@@ -20,6 +23,7 @@ export function TransactionExpenses({ data }: Props) {
       <Amount>R${data.value}</Amount>
       <Footer>
         <Date>Data: {data.date}</Date>
+        <Date>Imposto: R${tax}</Date>
       </Footer>
     </Container>
   );

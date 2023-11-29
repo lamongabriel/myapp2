@@ -3,11 +3,13 @@ import { createBottomTabNavigator, BottomTabNavigationProp } from '@react-naviga
 import { Dashboard } from '../pages/Dashboard'
 import { ListExpenses } from '../pages/ListExpenses'
 import { SearchExpenses } from '../pages/SearchExpenses'
+import { ListTotals } from '../pages/ListTotals'
 
 type AppRoutes = {
   dashboard: undefined;
   listExpenses: undefined;
   searchExpenses: undefined;
+  listTotals: undefined
 }
 
 export type AppNavigatorRoutesProps = BottomTabNavigationProp<AppRoutes>
@@ -32,6 +34,11 @@ export function AppRoutes() {
       <Screen
         name='searchExpenses'
         component={SearchExpenses}
+      />
+
+      <Screen
+        name='listTotals'
+        component={ListTotals}
       />
 
     </Navigator>
